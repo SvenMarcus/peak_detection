@@ -1,50 +1,92 @@
 import numpy as np
+from typing import Tuple, List
+from numpy import ndarray
 from scipy import interpolate
+from scipy.stats import linregress
+from consts import (LOCAL_POINTS, SLOPE_INITIAL_TILT, TILTING_STEPS, INTERSECTION_NUMBER)
 from matplotlib import pyplot as plt
 
-
-def average_distance(a):
+def median_distance(a: ndarray) -> ndarray:
+    """
+    Gets median distance between peaks
+    :param a:
+    :return: median
+    """
     distances = []
     for i in range(len(a) - 1):
         distances.append(a[i] - a[i + 1])
     return np.median(distances)
 
 
-def get_left_bound(array, peak, p_idx):
-    array = array[:p_idx]
-    m = np.arange(0, 1, 0.01)
-    x = np.arange(0, len(array), 1)
-    y_inter = interpolate.interp1d(x, array)
-    y_lin = lambda m_, c_, l_, x_: m_ * x_ + c_ - m_ * l_
-    m_best = fit_line(m=m, c=peak, l=len(x), x=x, y_inter=y_inter, y_lin=y_lin)
-    y_diff = np.diff(np.sign(y_lin(m_best, peak, len(x), x) - y_inter(x)))
-    idx_intersection = np.argwhere(y_diff).flatten()
-    return idx_intersection
+def get_left_right_bound(y: ndarray, x: ndarray, px: float, left_crop: int) -> Tuple[int, int]:
+    """
+    Computes the left and right bounds of a peak, analysing the first derivative.
+    First it interpolates the signal to be able to use it as a function.
+    Then fixes a line through the point corresponding to the max of the peak in the
+    original signal. The line is initialized close to a slope computed locally around the point.
+    Finally it's rotated contra clock wise, as long as it has three intersection points with
+    the interpolated functions.
+    :param y: first derivative of the signal
+    :param x: x values of the signal
+    :param px: x of the maxima point
+    :param left_crop: left cropping of the signal (for shifting)
+    :return: left and right intersection
+    """
+    y_inter = interpolate.interp1d(x, y)
+
+    px_i = px - left_crop
+    py = y[px_i]
+
+    slope = get_local_slope(px_i, x, y)
+    m = np.linspace(slope + SLOPE_INITIAL_TILT, 0, TILTING_STEPS, endpoint=False)
+    current_slope = slope
+
+    for mi in m:
+        c = py - (mi * px)
+        line = lambda x_: mi * x_ + c
+        intersections = get_inversion_idx(line(x) - y_inter(x))
+        if len(intersections) == INTERSECTION_NUMBER:
+            current_slope = mi
+        else:
+            break
+
+    final_line = lambda x_: current_slope * x_ + c
+    intersections = get_inversion_idx(final_line(x) - y_inter(x))
+    plt.plot(final_line(x))
+    plt.plot(y_inter(x))
+    plt.show()
+    inter = (intersections[0], intersections[-1])
+    return inter
 
 
-def get_right_bound(array, peak, p_idx):
-    array = array[p_idx:]
-    m = np.arange(-0.5, 0., 0.01)
-    x = np.arange(0, len(array), 1)
-    y_inter = interpolate.interp1d(x, array)
-    y_lin = lambda m_, c_, l_, x_: m_ * x_ + c_ - m_ * l_
-    m_best = fit_line(m=m, c=peak, l=0, x=x, y_inter=y_inter, y_lin=y_lin)
-    y_diff = np.diff(np.sign(y_lin(m_best, peak, 0, x) - y_inter(x)))
-    idx_intersection = np.argwhere(y_diff).flatten()
-    return idx_intersection
+def get_inversion_idx(array: ndarray) -> List[int]:
+    """
+    Finds the points where the function changes sign
+    :param array:
+    :return:
+    """
+    a = np.sign(array)
+    current_sign = a[0]
+    idxs = []
+    for i in range(len(a)):
+        if current_sign * a[i] > 0:
+            current_sign = a[i]
+        elif current_sign * a[i] < 0:
+            idxs.append(i)
+            current_sign = a[i]
+    return idxs
 
 
-def fit_line(m, c, l, x, y_inter, y_lin):
-    cumsum = []
-    for m_i in m:
-        y_diff = abs(np.subtract(y_lin(m_i, c, l, x), y_inter(x)))
-        cumsum_i = np.cumsum(y_diff)[-1]
-        cumsum.append(cumsum_i)
-        #plt.plot(y_diff)
-        #plt.plot(y_lin(m_i, c, l, x))
-        #plt.plot(y_inter(x))
-        #plt.show()
+def get_local_slope(px_i: float, x: ndarray, y: ndarray) -> float:
+    """
+    Computes the local slope around a point
+    :param px_i: x value of the point
+    :param x: array of x values
+    :param y: array of y values
+    :return: the slope
+    """
 
-    val, idx = min((val, idx) for (idx, val) in enumerate(cumsum))
-    m_best = m[idx]
-    return m_best
+    p_neigh_x = x[px_i - LOCAL_POINTS:px_i + LOCAL_POINTS]
+    p_neigh_y = y[px_i - LOCAL_POINTS:px_i + LOCAL_POINTS]
+    slope, intercept, r, p, se = linregress(p_neigh_x, p_neigh_y)
+    return slope
