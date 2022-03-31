@@ -5,7 +5,6 @@ from scipy import interpolate
 from scipy.stats import linregress
 from consts import (LOCAL_POINTS, SLOPE_INITIAL_TILT, TILTING_STEPS, INTERSECTION_NUMBER)
 
-
 def median_distance(a: ndarray) -> ndarray:
     """
     Gets median distance between peaks
@@ -36,8 +35,8 @@ def get_left_right_bound(y: ndarray, px: float, left_crop: int) -> Tuple[int, in
 
     px_i = px - left_crop
     py = y[px_i]
-
     slope = get_local_slope(px_i, x, y)
+
     m = np.linspace(slope + SLOPE_INITIAL_TILT, 0, TILTING_STEPS, endpoint=False)
     current_slope = slope
     for mi in m:
