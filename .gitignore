@@ -2,3 +2,5 @@
 data_L.csv
 data_r.csv
 .idea/workspace.xml
+*.pyc
+.idea/workspace.xml
