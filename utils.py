@@ -5,6 +5,7 @@ from scipy import interpolate
 from scipy.stats import linregress
 from consts import (LOCAL_POINTS, SLOPE_INITIAL_TILT, TILTING_STEPS, INTERSECTION_NUMBER)
 
+
 def median_distance(a: ndarray) -> ndarray:
     """
     Gets median distance between peaks

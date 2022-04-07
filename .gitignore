@@ -1,4 +1,4 @@
-.idea/misc.xml
-.idea/peak_detection.iml
-.idea/vcs.xml
 .idea/*
+data_L.csv
+data_r.csv
+.idea/workspace.xml
