@@ -5,7 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="517ffe38-290b-41ca-841e-e5f78b2895d6" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/old_func.py" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_L.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/data_r.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/peak_detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/peak_detection.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,6 +46,11 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Elisa\Documents\GitHub\peak_detection\test_data" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration name="peak_detection" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
@@ -78,7 +88,7 @@
       <workItem from="1648454290991" duration="23587000" />
       <workItem from="1648736973452" duration="3587000" />
       <workItem from="1649069969099" duration="73000" />
-      <workItem from="1649330323586" duration="1550000" />
+      <workItem from="1649330323586" duration="3192000" />
     </task>
     <servers />
   </component>
@@ -109,7 +119,7 @@
     </breakpoint-manager>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/peak_detection$peak_detection.coverage" NAME="peak_detection Coverage Results" MODIFIED="1649335264554" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/peak_detection$peak_detection.coverage" NAME="peak_detection Coverage Results" MODIFIED="1649336999099" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/peak_detection$main.coverage" NAME="peak_detection Coverage Results" MODIFIED="1648228269796" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

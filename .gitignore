@@ -1,6 +1,6 @@
 .idea/*
-data_L.csv
-data_r.csv
+test_data/data_L.csv
+test_data/data_r.csv
 .idea/workspace.xml
 *.pyc
 .idea/workspace.xml
