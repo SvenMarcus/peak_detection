@@ -8,14 +8,14 @@ from consts import (LOCAL_POINTS, SLOPE_INITIAL_TILT, TILTING_STEPS, INTERSECTIO
 
 def median_distance(a: ndarray) -> ndarray:
     """
-    Gets median distance between peaks
+    Gets median distance between points
     :param a:
     :return: median
     """
     distances = []
     for i in range(len(a) - 1):
         distances.append(a[i] - a[i + 1])
-    return np.median(distances)
+    return abs(np.median(distances))
 
 
 def get_left_right_bound(y: ndarray, px: float, left_crop: int) -> Tuple[int, int]:
@@ -36,7 +36,7 @@ def get_left_right_bound(y: ndarray, px: float, left_crop: int) -> Tuple[int, in
 
     px_i = px - left_crop
     py = y[px_i]
-    slope = get_local_slope(px_i, x, y)
+    slope = get_local_slope(px_i, x, y, LOCAL_POINTS)
 
     m = np.linspace(slope + SLOPE_INITIAL_TILT, 0, TILTING_STEPS, endpoint=False)
     current_slope = slope
@@ -73,16 +73,17 @@ def get_inversion_idx(array: ndarray) -> List[int]:
     return idxs
 
 
-def get_local_slope(px_i: float, x: ndarray, y: ndarray) -> float:
+def get_local_slope(px_i: float, x: ndarray, y: ndarray, neighbor_points: int) -> float:
     """
     Computes the local slope around a point
     :param px_i: x value of the point
     :param x: array of x values
     :param y: array of y values
+    :param neighbor_points: how many points before and after px_i to consider to compute the slope
     :return: the slope
     """
 
-    p_neigh_x = x[px_i - LOCAL_POINTS:px_i + LOCAL_POINTS]
-    p_neigh_y = y[px_i - LOCAL_POINTS:px_i + LOCAL_POINTS]
+    p_neigh_x = x[px_i - neighbor_points:px_i + neighbor_points]
+    p_neigh_y = y[px_i - neighbor_points:px_i + neighbor_points]
     slope, intercept, r, p, se = linregress(p_neigh_x, p_neigh_y)
     return slope

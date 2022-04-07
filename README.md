@@ -1,7 +1,7 @@
 # Peak detection 
 This script was used to develop a specific functionality for our kinematics data analysis.
 Here is a brief description of the experiment and of the desired output, to provide context.
-I left two test dataset in the test_data folder.
+I left two test dataset in the example_data folder.
 ## Kinematics experiment
 We apply reflective markers on the joints of a rat and let him run on a runway. At first, we get
 the 3D coordinates of each marker, which need to be parsed in single steps. To do this we have to

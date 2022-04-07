@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from utils import median_distance, get_left_right_bound
 from scipy.signal import find_peaks
 
-y = np.genfromtxt('test_data/data_r.csv', delimiter=',')
+y = np.genfromtxt('example_data/data_r.csv', delimiter=',')
 y = y[1:]
 max_x, _ = find_peaks(y, prominence=1)
 y_g = np.gradient(y, 1)
