@@ -2,3 +2,4 @@ example_data/data_L.csv
 example_data/data_r.csv
 *.pyc
 __pycache__/utils.cpython-39.pyc
+.idea/*
