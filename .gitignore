@@ -1,7 +1,4 @@
-.idea/*
 example_data/data_L.csv
 example_data/data_r.csv
-.idea/workspace.xml
 *.pyc
-.idea/workspace.xml
 __pycache__/utils.cpython-39.pyc
