@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple, TypeVar, Union
+from typing import List, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -11,7 +11,6 @@ from utils import get_inversion_idx, get_local_slope, median_distance
 
 ValueArray = npt.NDArray[np.float64]
 PositionArray = npt.NDArray[np.int64]
-GenericArrayType = TypeVar("GenericArrayType", ValueArray, PositionArray)
 
 PeakBound = Tuple[int, int]
 
@@ -60,8 +59,12 @@ def _collect_accurate_bounds(
 def _accurate_bounds_for_peak(
     gradients: ValueArray, peak_bound_estimate: PeakBound, peak_position: int
 ) -> PeakBound:
+    gradients_in_estimated_bounds = gradients[
+        peak_bound_estimate[0] : peak_bound_estimate[1]
+    ]
+
     return _get_left_right_bound(
-        gradients=gradients[peak_bound_estimate[0] : peak_bound_estimate[1]],
+        gradients=gradients_in_estimated_bounds,
         peak_position=peak_position,
         left_crop=peak_bound_estimate[0],
     )
@@ -77,16 +80,45 @@ def _get_left_right_bound(
     original signal. The line is initialized close to a slope computed locally around the point.
     Finally it's rotated contra clock wise, as long as it has three intersection points with
     the interpolated functions.
-    :param y: first derivative of the signal
-    :param px: x of the maxima point
+    :param gradients: first derivative of the signal
+    :param peak_position: x of the maxima point
     :param left_crop: left cropping of the signal (for shifting)
     :return: left and right intersection
     """
     x: PositionArray = np.arange(0, len(gradients), 1, dtype=np.int64)
+    interpolated_gradients = _interpolate_gradients(x, gradients)
     cropped_peak_position = peak_position - left_crop
-    intersections = _find_relevant_intersections(x, gradients, cropped_peak_position)
-    print(len(intersections))
-    return (intersections[0] + left_crop, intersections[-1] + left_crop)
+    intersections = _line_intersections_with_gradients(
+        x, interpolated_gradients, cropped_peak_position
+    )
+
+    return intersections[0] + left_crop, intersections[-1] + left_crop
+
+
+def _interpolate_gradients(x: PositionArray, gradients: ValueArray) -> ValueArray:
+    interpolation = interpolate.interp1d(x, gradients)
+    interpolated_gradients: ValueArray = interpolation(x)
+    return interpolated_gradients
+
+
+def _line_intersections_with_gradients(
+    x: PositionArray, gradients: ValueArray, peak_position: float
+) -> List[int]:
+    slope_tilts = _get_slope_tilts(x, gradients, peak_position)
+    peak_gradient = gradients[peak_position]
+
+    final_intersections = [0, 0]
+    for current_slope in slope_tilts:
+        y_intercept = _get_y_intercept(peak_position, peak_gradient, current_slope)
+        line = _linear_function(x, current_slope, y_intercept)
+        intersections = _intersections_of_functions(gradients, line)
+
+        if len(intersections) != INTERSECTION_NUMBER:
+            break
+
+        final_intersections = intersections
+
+    return final_intersections
 
 
 def _get_slope_tilts(
@@ -96,31 +128,15 @@ def _get_slope_tilts(
     return np.linspace(slope + SLOPE_INITIAL_TILT, 0, TILTING_STEPS, endpoint=False)
 
 
-def _find_relevant_intersections(
-    x: PositionArray, gradients: ValueArray, peak_position: float
-) -> List[int]:
-    slope_tilts = _get_slope_tilts(x, gradients, peak_position)
-    peak_gradient = gradients[peak_position]
-    print(peak_gradient)
-    for current_slope in slope_tilts:
-        y_intercept = _get_y_intercept(peak_position, peak_gradient, current_slope)
-        function = _linear_function(x, current_slope, y_intercept)
-        intersections = _intersections_of_functions(gradients, function)
-
-        if len(intersections) != INTERSECTION_NUMBER:
-            break
-    return intersections
-
-
 def _get_y_intercept(x: float, y: float, slope: float) -> float:
     return y - (slope * x)
 
 
+def _linear_function(x: PositionArray, slope: float, y_intercept: float) -> ValueArray:
+    return x * slope + y_intercept  # type: ignore
+
+
 def _intersections_of_functions(
-    gradients: GenericArrayType, current_function: GenericArrayType
+    gradients: ValueArray, current_function: ValueArray
 ) -> List[int]:
     return get_inversion_idx(current_function - gradients)
-
-
-def _linear_function(x: GenericArrayType, slope: float, y_intercept: float) -> ValueArray:
-    return x * slope + y_intercept  # type: ignore
