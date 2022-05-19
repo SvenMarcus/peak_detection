@@ -22,52 +22,40 @@ class BoundedPeak:
 
 
 def peak_series(values: ValueArray) -> List[BoundedPeak]:
-    gradients = np.gradient(values, 1)
     peak_positions, _ = find_peaks(values, prominence=1)
-    estimated_bounds = _estimate_bounds(values, peak_positions)
-    accurate_bounds = _collect_accurate_bounds(
-        gradients, peak_positions, estimated_bounds
-    )
-    zipped = zip(accurate_bounds, peak_positions)
-    return [BoundedPeak(bounds, p) for bounds, p in zipped]
+    estimated = _find_estimated_bounded_peaks(values, peak_positions)
+    return _find_accurate_bounded_peaks(values, estimated)
 
 
-def _estimate_bounds(
+def _find_estimated_bounded_peaks(
     values: ValueArray, peak_positions: PositionArray
-) -> List[PeakBound]:
+) -> List[BoundedPeak]:
     avg_peak_distance = _average_peak_distances(peak_positions)
     left_bound_estimates = np.clip(peak_positions - avg_peak_distance, 0, len(values))
     righ_bound_estimates = np.clip(peak_positions + avg_peak_distance, 0, len(values))
-    return list(zip(left_bound_estimates, righ_bound_estimates))
+
+    zipped = zip(left_bound_estimates, righ_bound_estimates)
+    return [
+        BoundedPeak(estimated_bounds, peak_positions[p])
+        for p, estimated_bounds in enumerate(zipped)
+    ]
 
 
 def _average_peak_distances(peak_positions: PositionArray) -> int:
     return abs(int(median_distance(peak_positions) / 2))
 
 
-def _collect_accurate_bounds(
-    gradients: ValueArray,
-    peak_positions: PositionArray,
-    estimated_bounds: List[PeakBound],
-) -> List[PeakBound]:
-    return [
-        _accurate_bounds_for_peak(gradients, estimated_bounds[i], p)
-        for i, p in enumerate(peak_positions)
-    ]
+def _find_accurate_bounded_peaks(
+    values: ValueArray, peak_estimates: List[BoundedPeak]
+) -> List[BoundedPeak]:
+    gradients = np.gradient(values, 1)
+    for peak in peak_estimates:
+        gradients_in_estimated_bounds = gradients[peak.bounds[0] : peak.bounds[1]]
+        peak.bounds = _get_left_right_bound(
+            gradients_in_estimated_bounds, peak.position, peak.bounds[0]
+        )
 
-
-def _accurate_bounds_for_peak(
-    gradients: ValueArray, peak_bound_estimate: PeakBound, peak_position: int
-) -> PeakBound:
-    gradients_in_estimated_bounds = gradients[
-        peak_bound_estimate[0] : peak_bound_estimate[1]
-    ]
-
-    return _get_left_right_bound(
-        gradients=gradients_in_estimated_bounds,
-        peak_position=peak_position,
-        left_crop=peak_bound_estimate[0],
-    )
+    return peak_estimates
 
 
 def _get_left_right_bound(
