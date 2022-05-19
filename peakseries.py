@@ -4,7 +4,7 @@ from typing import List, Tuple
 import numpy as np
 import numpy.typing as npt
 from scipy import interpolate
-from scipy.signal import find_peaks
+from scipy import signal
 
 from consts import INTERSECTION_NUMBER, LOCAL_POINTS, SLOPE_INITIAL_TILT, TILTING_STEPS
 from utils import get_inversion_idx, get_local_slope, median_distance
@@ -22,7 +22,7 @@ class BoundedPeak:
 
 
 def peak_series(values: ValueArray) -> List[BoundedPeak]:
-    peak_positions, _ = find_peaks(values, prominence=1)
+    peak_positions, _ = signal.find_peaks(values, prominence=1)
     estimated = _find_estimated_bounded_peaks(values, peak_positions)
     return _find_accurate_bounded_peaks(values, estimated)
 
@@ -49,13 +49,20 @@ def _find_accurate_bounded_peaks(
     values: ValueArray, peak_estimates: List[BoundedPeak]
 ) -> List[BoundedPeak]:
     gradients = np.gradient(values, 1)
-    for peak in peak_estimates:
-        gradients_in_estimated_bounds = gradients[peak.bounds[0] : peak.bounds[1]]
-        peak.bounds = _get_left_right_bound(
-            gradients_in_estimated_bounds, peak.position, peak.bounds[0]
-        )
 
-    return peak_estimates
+    return [
+        BoundedPeak(_find_accurate_bound_for_peak(gradients, peak), peak.position)
+        for peak in peak_estimates
+    ]
+
+
+def _find_accurate_bound_for_peak(gradients: ValueArray, peak: BoundedPeak) -> PeakBound:
+    gradients_in_estimated_bounds = gradients[peak.bounds[0] : peak.bounds[1]]
+    bounds = _get_left_right_bound(
+        gradients_in_estimated_bounds, peak.position, peak.bounds[0]
+    )
+
+    return bounds
 
 
 def _get_left_right_bound(
