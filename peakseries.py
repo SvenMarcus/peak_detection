@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Tuple, Union
+from typing import List, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -86,7 +86,7 @@ def _get_left_right_bound(
     :return: left and right intersection
     """
     x: PositionArray = np.arange(0, len(gradients), 1, dtype=np.int64)
-    interpolated_gradients = _interpolate_gradients(x, gradients)
+    interpolated_gradients = _interpolate(x, gradients)
     cropped_peak_position = peak_position - left_crop
     intersections = _line_intersections_with_gradients(
         x, interpolated_gradients, cropped_peak_position
@@ -95,10 +95,10 @@ def _get_left_right_bound(
     return intersections[0] + left_crop, intersections[-1] + left_crop
 
 
-def _interpolate_gradients(x: PositionArray, gradients: ValueArray) -> ValueArray:
-    interpolation = interpolate.interp1d(x, gradients)
-    interpolated_gradients: ValueArray = interpolation(x)
-    return interpolated_gradients
+def _interpolate(x: PositionArray, y: ValueArray) -> ValueArray:
+    interpolation = interpolate.interp1d(x, y)
+    interpolated: ValueArray = interpolation(x)
+    return interpolated
 
 
 def _line_intersections_with_gradients(
